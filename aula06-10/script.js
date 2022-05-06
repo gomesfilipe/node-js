@@ -2,11 +2,13 @@ const express = require('express')
 const app = express()
 
 app.get('/', function(req, res) {
-    res.send('Welcome to my web app!')
+    res.sendFile(__dirname + '/html/initial.html') // Enviando arquivo html
+    // res.send('Welcome to my web app!')
 })
 
 app.get('/about', function(req, res) {
-    res.send('My page about!')
+    res.sendFile(__dirname + '/html/about.html') // Enviando arquivo html
+    // res.send('My page about!')
 })
 
 app.get('/blog', function(req, res) {
