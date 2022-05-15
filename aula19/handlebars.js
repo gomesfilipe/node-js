@@ -23,7 +23,6 @@ app.use(bodyParser.json())
 // Rotas
 app.get('/', function(req, res) {
     Post.findAll({order: [['id', 'DESC']]}).then(function(posts) {
-        console.log(posts)
         res.render('home', {posts: posts})
     })
     
@@ -55,6 +54,32 @@ app.get('/delete/:id', function(req, res) {
         res.send("Post deleted success!")
     }).catch(function(error) {
         res.send("This post doesn't exist!")
+    })
+})
+
+app.get('/edit/:id', function(req, res) {
+    Post.findByPk(req.params.id).then(post => {
+        res.render('edit', {
+            id: req.params.id,
+            title: post.title,
+            content: post.content
+        })
+    }).catch(function(error) {
+        res.send('This post doesn\'t exist!')
+    })
+})
+
+app.post('/edited/:id', function(req, res) {
+    Post.update({
+        title: req.body.title,
+        content: req.body.content
+    },
+    {
+        where: {id: req.params.id}
+    }).then(function() {
+        res.redirect('/')
+    }).catch(function(error) {
+        res.send("Ocurred an error: " + error)
     })
 })
 
