@@ -1,0 +1,14 @@
+<h1>Posts List</h1>
+<a href="/register"><button>New Post</button></a>
+<hr>
+{{#each posts}}
+    <h1>{{title}}</h1>
+    <p>{{content}}</p>
+    Created at <small>{{createdAt}}</small>
+    <p>
+        <a href="/delete/{{id}}"><button>Delete Post</button></a>
+    </p>
+    <hr>
+
+    {{!-- <link rel="stylesheet" href="style.css"> --}}
+{{/each}}
