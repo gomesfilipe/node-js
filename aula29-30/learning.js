@@ -60,4 +60,4 @@ new newUser({
 // show databases; (Mostrar todos os bancos de dados)
 // use nome_bd; (Acessar um banco de dados)
 // show collections; (Mostrar uma collection de um bando de dados)
-// db.nome_collection.find() (Mostrar todos os dados de uma collection)
+// db.nome_collection.find(); (Mostrar todos os dados de uma collection)
