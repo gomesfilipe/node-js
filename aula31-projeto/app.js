@@ -6,6 +6,24 @@ const app = express()
 const admin = require('./routes/admin')
 const path = require('path')
 const mongoose = require('mongoose')
+const session = require('express-session')
+const flash = require('connect-flash')
+
+// Configuração sessão
+app.use(session({
+    secret: 'cursodenode',
+    resave: true,
+    saveUninitialized: true
+}))
+
+app.use(flash())
+
+// Middleware
+app.use((req, res, next) => {
+    res.locals.success_msg = req.flash('success_msg') // Variável global.
+    res.locals.error_msg = req.flash('error_msg') // Variável global.
+    next() // Middleware permitindo a requisição continuar.
+})
 
 // Configuração Body Parser
 app.use(bodyParser.urlencoded({extended: true}))
@@ -33,6 +51,12 @@ mongoose.connect("mongodb://localhost:27017/blogapp").then(() => {
 
 // Configuração Public
 app.use(express.static(path.join(__dirname, 'public')))
+
+// Middleware
+// app.use((req, res, next) => {
+//     console.log('Hello, I am a Middleware!')
+//     next()
+// })
 
 // Rotas
 app.use('/admin', admin) // Prefixo para rotas do grupo admin.
