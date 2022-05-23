@@ -1,8 +1,11 @@
+const read = require('body-parser/lib/read')
 const express = require('express')
 const res = require('express/lib/response')
 const router = express.Router()
 const mongoose = require('mongoose')
 require('../models/Categoria')
+require('../models/Postagem')
+const Postagem = mongoose.model('postagens')
 const Categoria = mongoose.model('categorias')
 
 router.get('/', (req, res) => {
@@ -119,7 +122,7 @@ router.post('/categorias/edit', (req, res) => {
 })
 
 router.post('/categorias/deletar', (req, res) => {
-    Categoria.remove({_id: req.body.id}).then(() => {
+    Categoria.deleteOne({_id: req.body.id}).then(() => {
         req.flash('success_msg', 'Categoria deletada com sucesso!')
         res.redirect('/admin/categorias')
     }).catch((error) => {
@@ -129,7 +132,12 @@ router.post('/categorias/deletar', (req, res) => {
 })
 
 router.get('/postagens', (req, res) => {
-    res.render('admin/postagens')
+    Postagem.find().populate('categoria').sort({data: 'desc'}).then((postagens) => {
+        res.render('admin/postagens', {postagens: postagens})
+    }).catch((error) => {
+        req.flash('error_msg', 'Erro ao listar as postagens.')
+        res.redirect('/admin')
+    })
 })
 
 router.get('/postagens/add', (req, res) => {
@@ -138,6 +146,82 @@ router.get('/postagens/add', (req, res) => {
     }).catch((error) => {
         req.flash('error_msg', 'Erro ao carregar o formulário.')
         res.redirect('/admin')
+    })
+})
+
+router.post('/postagens/nova', (req, res) => {
+    var errors = []
+
+    if(req.body.categoria == '0') {
+        errors.push({text: 'Categoria inválida, registre uma para fazer uma postagem.'})
+    }
+
+    if(errors.length > 0) {
+        res.render('admin/addpostagem', {errors: errors})   
+    
+    } else {
+        const newPostagem = {
+            title: req.body.title,
+            description: req.body.description,
+            content: req.body.content,
+            categoria: req.body.categoria,
+            slug: req.body.slug
+        }
+
+        new Postagem(newPostagem).save().then(() => {
+            req.flash('success_msg', 'Postagem criada com sucesso!')
+            res.redirect('/admin/postagens')
+        }).catch((error) => {
+            req.flash('error_msg', 'Erro ao criar postagem. Tente novamente.')
+        })
+    }
+})
+
+router.get('/postagens/edit/:id', (req, res) => {
+    Postagem.findOne({_id: req.params.id}).then((postagem) => {
+        Categoria.find().then((categorias) => {
+            res.render('admin/editpostagens', {categorias: categorias, postagem: postagem})
+
+        }).catch((error) => {
+            res.flash('error_msg', 'Erro ao listar as categorias.')
+            res.redirect('/admin/postagens')
+        })
+
+    }).catch((error) => {
+        req.flash('error_msg', 'Erro ao carregar o formulário de edição.')
+        res.redirect('/admin/postagens')
+    }) 
+})
+
+router.post('/postagens/edit', (req, res) => {
+    Postagem.findOne({_id: req.body.id}).then((postagem) => {
+        postagem.title = req.body.title
+        postagem.slug = req.body.slug
+        postagem.description = req.body.description
+        postagem.content = req.body.content
+        postagem.categoria = req.body.categoria
+
+        postagem.save().then(() => {
+            req.flash('success_msg', 'Postagem editada com sucesso!')
+            res.redirect('/admin/postagens')
+        }).catch((error) => {
+            req.flash('error_msg', 'Erro ao salvar edição da postagem. 1')
+            res.redirect('/admin/postagens')
+        })
+
+    }).catch((error) => {
+        req.flash('error_msg', 'Erro ao salvar edição da postagem. 2')
+        res.redirect('/admin/postagens')
+    })
+})
+
+router.get('/postagens/deletar/:id', (req, res) => {
+    Postagem.deleteOne({_id: req.params.id}).then(() => {
+        req.flash('success_msg', 'Postagem deletada com sucesso!')
+        res.redirect('/admin/postagens')
+    }).catch((error) => {
+        req.flash('error_msg', 'Erro ao deletar postagem.')
+        res.redirect('/admin/postagens')
     })
 })
 

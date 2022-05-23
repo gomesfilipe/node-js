@@ -61,6 +61,10 @@ app.use(express.static(path.join(__dirname, 'public')))
 // Rotas
 app.use('/admin', admin) // Prefixo para rotas do grupo admin.
 
+app.get('/', (req, res) => {
+    res.render('index')
+})
+
 // Outros
 const door = 8081
 app.listen(door, () => {
