@@ -8,6 +8,11 @@ const path = require('path')
 const mongoose = require('mongoose')
 const session = require('express-session')
 const flash = require('connect-flash')
+require('./models/Postagem')
+require('./models/Categoria')
+
+const Postagem = mongoose.model('postagens')
+const Categoria = mongoose.model('categorias')
 
 // Configuração sessão
 app.use(session({
@@ -62,7 +67,60 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use('/admin', admin) // Prefixo para rotas do grupo admin.
 
 app.get('/', (req, res) => {
-    res.render('index')
+    Postagem.find().sort({date: 'desc'}).populate('categoria').then((postagens) => {
+        res.render('index', {postagens: postagens})
+    }).catch((error) => {
+        req.flash('error_msg', 'Erro ao carregar postagens.')
+        res.redirect('/404')
+    })
+    
+})
+
+app.get('/postagem/:slug', (req, res) => {
+    Postagem.findOne({slug: req.params.slug}).then((postagem) => {
+        if(postagem) {
+            res.render('postagem/index', {postagem: postagem})
+        } else {
+            req.flash('error_msg', 'Postagem inexistente.')
+            res.redirect('/')
+        }
+    }).catch((error) => {
+        req.flash('error_msg', 'Erro ao abrir página da postagem.')
+        res.redirect('/')
+    })
+})
+
+app.get('/categorias', (req, res) => {
+    Categoria.find().then((categorias) => {
+        res.render('categorias/index', {categorias: categorias})
+    }).catch((error) => {
+        req.flash('error_msg', 'Erro ao listar categorias.')
+        res.redirect('/')
+    })
+})
+
+app.get('/categorias/:slug', (req, res) => {
+    Categoria.findOne({slug: req.params.slug}).then((categoria) => {
+        if(categoria) {
+            Postagem.find({categoria: categoria._id}).then((postagens) => {
+                res.render('categorias/postagens', {postagens: postagens, categoria: categoria})
+
+            }).catch((error) => {
+                req.flash('error_msg', 'Erro ao listar postagens dessa categoria.')
+                res.redirect('/')
+            })
+        } else {
+            req.flash('error_msg', 'Categoria inexistente.')
+            res.redirect('/')
+        }
+    }).catch((error) => {
+        req.flash('error_msg', 'Erro ao listar postagens dessa categoria.')
+        res.redirect('/')
+    })
+})
+
+app.get('/404', (req, res) => {
+    res.send('ERROR 404!')
 })
 
 // Outros
