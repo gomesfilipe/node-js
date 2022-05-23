@@ -4,6 +4,7 @@ const handlebars = require('express-handlebars')
 const bodyParser = require('body-parser')
 const app = express()
 const admin = require('./routes/admin')
+const usuarios = require('./routes/usuario')
 const path = require('path')
 const mongoose = require('mongoose')
 const session = require('express-session')
@@ -65,6 +66,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 // Rotas
 app.use('/admin', admin) // Prefixo para rotas do grupo admin.
+app.use('/usuarios', usuarios) // Prefixo para rotas do grupo usuarios.
 
 app.get('/', (req, res) => {
     Postagem.find().sort({date: 'desc'}).populate('categoria').then((postagens) => {
