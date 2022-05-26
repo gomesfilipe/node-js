@@ -2,6 +2,8 @@ const express = require('express')
 const router = express.Router()
 const mongoose = require('mongoose')
 require('../models/Usuario')
+const Usuario = mongoose.model('usuarios')
+const bcrypt = require('bcryptjs')
 
 router.get('/registro', (req, res) => {
     res.render('usuarios/registro')
@@ -33,8 +35,45 @@ router.post('/registro', (req, res) => {
     if(errors.length > 0) {
         res.render('usuarios/registro', {errors: errors})
     } else {
+        Usuario.findOne({email: req.body.email}).then(usuario => {
+            if(usuario) {
+                req.flash('error_msg', 'E-mail já cadastrado. Tente novamente.')
+                res.redirect('/usuarios/registro')
+            } else {
+                const newUsuario = new Usuario({
+                    name: req.body.name,
+                    email: req.body.email,
+                    password: req.body.password
+                })
 
+                bcrypt.genSalt(10, (error, salt) => {
+                    bcrypt.hash(newUsuario.password, salt, (error, hash) => {
+                        if(error) {
+                            req.flash('error_msg', 'Erro durante salvamento do usuário.')
+                            res.redirect('/')
+                        }
+
+                        newUsuario.password = hash
+
+                        newUsuario.save().then(() => {
+                            req.flash('success_msg', 'Usuário criado com sucesso!')
+                            res.redirect('/')
+                        }).catch((error) => {
+                            req.flash('error_msg', 'Erro ao criar usuário, tente novamente.')
+                            res.redirect('/usuarios/registro')
+                        })
+                    })
+                })
+            }
+        }).catch((error) => {
+            req.flash('error_msg', 'Erro ao cadastrar conta.')
+            res.redirect('/') 
+        })
     }
+})
+
+router.get('/login', (req, res) => {
+    res.render('usuarios/login')
 })
 
 module.exports = router

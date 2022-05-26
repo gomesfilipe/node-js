@@ -15,6 +15,9 @@ require('./models/Categoria')
 const Postagem = mongoose.model('postagens')
 const Categoria = mongoose.model('categorias')
 
+const passport = require('passport')
+require('./config/auth')(passport)
+
 // Configuração sessão
 app.use(session({
     secret: 'cursodenode',
@@ -22,6 +25,8 @@ app.use(session({
     saveUninitialized: true
 }))
 
+app.use(passport.initialize())
+app.use(passport.session())
 app.use(flash())
 
 // Middleware
