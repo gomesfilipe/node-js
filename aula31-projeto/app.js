@@ -33,6 +33,7 @@ app.use(flash())
 app.use((req, res, next) => {
     res.locals.success_msg = req.flash('success_msg') // Variável global.
     res.locals.error_msg = req.flash('error_msg') // Variável global.
+    res.locals.error = req.flash('error')
     next() // Middleware permitindo a requisição continuar.
 })
 
