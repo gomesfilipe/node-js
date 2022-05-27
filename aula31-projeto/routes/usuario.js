@@ -7,7 +7,13 @@ const bcrypt = require('bcryptjs')
 const passport = require('passport')
 
 router.get('/registro', (req, res) => {
-    res.render('usuarios/registro')
+    
+    if(req.user) {
+        req.flash('error_msg', 'Você já está logado.')
+        res.redirect('/')
+    } else {
+        res.render('usuarios/registro')
+    }
 })
 
 router.post('/registro', (req, res) => {
@@ -74,7 +80,12 @@ router.post('/registro', (req, res) => {
 })
 
 router.get('/login', (req, res) => {
-    res.render('usuarios/login')
+    if(req.user) {
+        req.flash('error_msg', 'Você já está logado.')
+        res.redirect('/')
+    } else {
+        res.render('usuarios/login')
+    }
 })
 
 router.post('/login', (req, res, next) => {
@@ -83,6 +94,14 @@ router.post('/login', (req, res, next) => {
         failureRedirect: '/usuarios/login',
         failureFlash: true 
     })(req, res, next)
+})
+
+router.get('/logout', (req, res) => {
+    if(req.user) {
+        req.logout(() => {})
+        req.flash('success_msg', 'Deslogado com sucesso!')
+    }
+    res.redirect('/')
 })
 
 module.exports = router
